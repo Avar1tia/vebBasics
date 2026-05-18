@@ -3,6 +3,29 @@
   padding: 0;
 }
 
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin: 0 0 25px;
+}
+
+.filter-button {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 10px;
+  background-color: transparent;
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 18px;
+  color: #0b6b2f;
+  cursor: pointer;
+}
+
+.filter-button:hover,
+.filter-button.active {
+  background-color: #d8f0df;
+}
+
 .dish-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -88,6 +111,10 @@
 @media (max-width: 600px) {
   .menu-section h2 {
     text-align: center;
+  }
+
+  .filters {
+    justify-content: center;
   }
 
   .dish-grid {

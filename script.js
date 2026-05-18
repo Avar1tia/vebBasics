@@ -1,7 +1,17 @@
 const selectedDishes = {
   soup: null,
   'main-dish': null,
-  drink: null
+  salad: null,
+  drink: null,
+  dessert: null
+};
+
+const activeFilters = {
+  soup: null,
+  'main-dish': null,
+  salad: null,
+  drink: null,
+  dessert: null
 };
 
 const categorySettings = {
@@ -17,11 +27,23 @@ const categorySettings = {
     emptyText: 'Блюдо не выбрано',
     hiddenInputId: 'selected-main-dish'
   },
+  salad: {
+    gridId: 'salad-grid',
+    title: 'Салат/стартер',
+    emptyText: 'Блюдо не выбрано',
+    hiddenInputId: 'selected-salad'
+  },
   drink: {
     gridId: 'drink-grid',
     title: 'Напиток',
     emptyText: 'Напиток не выбран',
     hiddenInputId: 'selected-drink'
+  },
+  dessert: {
+    gridId: 'dessert-grid',
+    title: 'Десерт',
+    emptyText: 'Десерт не выбран',
+    hiddenInputId: 'selected-dessert'
   }
 };
 
@@ -56,20 +78,27 @@ function createDishCard(dish) {
   return card;
 }
 
+function getSortedDishesByCategory(category) {
+  return dishes
+    .filter((dish) => dish.category === category)
+    .sort((firstDish, secondDish) => firstDish.name.localeCompare(secondDish.name, 'ru'));
+}
+
+function renderCategory(category) {
+  const settings = categorySettings[category];
+  const grid = document.getElementById(settings.gridId);
+  const filterKind = activeFilters[category];
+
+  grid.innerHTML = '';
+
+  getSortedDishesByCategory(category)
+    .filter((dish) => !filterKind || dish.kind === filterKind)
+    .forEach((dish) => grid.append(createDishCard(dish)));
+}
+
 function renderDishes() {
-  Object.values(categorySettings).forEach((category) => {
-    const grid = document.getElementById(category.gridId);
-    grid.innerHTML = '';
-  });
-
-  const sortedDishes = [...dishes].sort((firstDish, secondDish) =>
-    firstDish.name.localeCompare(secondDish.name, 'ru')
-  );
-
-  sortedDishes.forEach((dish) => {
-    const grid = document.getElementById(categorySettings[dish.category].gridId);
-    grid.append(createDishCard(dish));
-  });
+  Object.keys(categorySettings).forEach((category) => renderCategory(category));
+  updateSelectedCards();
 }
 
 function chooseDish(keyword) {
@@ -170,8 +199,34 @@ function resetSelectedDishes() {
   updateOrderSummary();
 }
 
+function setupFilters() {
+  document.querySelectorAll('.menu-section').forEach((section) => {
+    const category = section.dataset.category;
+
+    section.querySelectorAll('.filter-button').forEach((button) => {
+      button.addEventListener('click', () => {
+        const clickedKind = button.dataset.kind;
+        const isAlreadyActive = activeFilters[category] === clickedKind;
+
+        activeFilters[category] = isAlreadyActive ? null : clickedKind;
+
+        section.querySelectorAll('.filter-button').forEach((filterButton) => {
+          filterButton.classList.toggle(
+            'active',
+            activeFilters[category] === filterButton.dataset.kind
+          );
+        });
+
+        renderCategory(category);
+        updateSelectedCards();
+      });
+    });
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   renderDishes();
+  setupFilters();
   updateOrderSummary();
 
   const form = document.querySelector('.order-form');
